@@ -403,6 +403,25 @@ pub fn flush() {
   }
 }
 
+pub fn report_event(name: &'static str, data: impl std::fmt::Display) {
+  let Some((_, log_processor)) = OTEL_PROCESSORS.get() else {
+    return;
+  };
+
+  let mut log_record = LogRecord::default();
+
+  log_record.set_observed_timestamp(SystemTime::now());
+  log_record.set_event_name(name);
+  log_record.set_severity_number(Severity::Trace);
+  log_record.set_severity_text(Severity::Trace.name());
+  log_record.set_body(format!("{data}").into());
+
+  log_processor.emit(
+    &mut log_record,
+    &InstrumentationScope::builder("deno").build(),
+  );
+}
+
 pub fn handle_log(record: &log::Record) {
   use log::Level;
 
