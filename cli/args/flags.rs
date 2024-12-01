@@ -382,7 +382,6 @@ pub struct TaskFlags {
   pub cwd: Option<String>,
   pub task: Option<String>,
   pub is_run: bool,
-  pub recursive: bool,
   pub filter: Option<String>,
   pub eval: bool,
 }
@@ -5278,14 +5277,18 @@ fn task_parse(
   unstable_args_parse(flags, matches, UnstableArgsConfig::ResolutionAndRuntime);
   node_modules_arg_parse(flags, matches);
 
-  let filter = matches.remove_one::<String>("filter");
-  let recursive = matches.get_flag("recursive") || filter.is_some();
+  let filter = if let Some(filter) = matches.remove_one::<String>("filter") {
+    Some(filter)
+  } else if matches.get_flag("recursive") {
+    Some("*".to_string())
+  } else {
+    None
+  };
 
   let mut task_flags = TaskFlags {
     cwd: matches.remove_one::<String>("cwd"),
     task: None,
     is_run: false,
-    recursive,
     filter,
     eval: matches.get_flag("eval"),
   };
@@ -10490,7 +10493,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10507,7 +10509,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10523,7 +10524,6 @@ mod tests {
           cwd: Some("foo".to_string()),
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10539,7 +10539,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: true,
           filter: Some("*".to_string()),
           eval: false,
         }),
@@ -10555,8 +10554,7 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: true,
-          filter: None,
+          filter: Some("*".to_string()),
           eval: false,
         }),
         ..Flags::default()
@@ -10571,8 +10569,7 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: true,
-          filter: None,
+          filter: Some("*".to_string()),
           eval: false,
         }),
         ..Flags::default()
@@ -10587,7 +10584,6 @@ mod tests {
           cwd: None,
           task: Some("echo 1".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: true,
         }),
@@ -10618,7 +10614,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10638,7 +10633,6 @@ mod tests {
           cwd: Some("foo".to_string()),
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10659,7 +10653,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10679,7 +10672,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10699,7 +10691,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10720,7 +10711,6 @@ mod tests {
           cwd: None,
           task: Some("build".to_string()),
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10740,7 +10730,6 @@ mod tests {
           cwd: None,
           task: None,
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10759,7 +10748,6 @@ mod tests {
           cwd: None,
           task: None,
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -10779,7 +10767,6 @@ mod tests {
           cwd: None,
           task: None,
           is_run: false,
-          recursive: false,
           filter: None,
           eval: false,
         }),
@@ -11644,7 +11631,7 @@ Usage: deno repl [OPTIONS] [-- [ARGS]...]\n"
         OutdatedFlags {
           filters: vec![],
           kind: OutdatedKind::PrintOutdated { compatible: false },
-          recursive: true,
+          recursive: false,
         },
       ),
       (
@@ -11652,7 +11639,7 @@ Usage: deno repl [OPTIONS] [-- [ARGS]...]\n"
         OutdatedFlags {
           filters: vec![],
           kind: OutdatedKind::PrintOutdated { compatible: true },
-          recursive: true,
+          recursive: false,
         },
       ),
       (
