@@ -11631,7 +11631,7 @@ Usage: deno repl [OPTIONS] [-- [ARGS]...]\n"
         OutdatedFlags {
           filters: vec![],
           kind: OutdatedKind::PrintOutdated { compatible: false },
-          recursive: false,
+          recursive: true,
         },
       ),
       (
@@ -11639,7 +11639,7 @@ Usage: deno repl [OPTIONS] [-- [ARGS]...]\n"
         OutdatedFlags {
           filters: vec![],
           kind: OutdatedKind::PrintOutdated { compatible: true },
-          recursive: false,
+          recursive: true,
         },
       ),
       (
